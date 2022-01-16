@@ -170,13 +170,6 @@
 
       // =====================================================================
 
-
-
-
-
-
-
-
       var $ = go.GraphObject.make;  // for conciseness in defining templates
 
       myDiagram =
@@ -415,7 +408,35 @@
             //    { points: new go.List(/*go.Point*/).addAll([new go.Point(0, 0)]) }
               ])
           });
+          document.getElementById("blobButton").addEventListener("click", makeBlob);
     }
+
+    function myCallback(blob) {
+      var url = window.URL.createObjectURL(blob);
+      var filename = "myBlobFile.png";
+
+      var a = document.createElement("a");
+      a.style = "display: none";
+      a.href = url;
+      a.download = filename;
+
+      // IE 11
+      if (window.navigator.msSaveBlob !== undefined) {
+        window.navigator.msSaveBlob(blob, filename);
+        return;
+      }
+
+      document.body.appendChild(a);
+      requestAnimationFrame(function() {
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+      });
+    }
+    function makeBlob() {
+      var blob = myDiagram.makeImageData({ background: "white", returnType: "blob", callback: myCallback });
+    }
+
 
 
     // Show the diagram's model in JSON format that the user may edit
@@ -444,7 +465,7 @@
   <div style="width: 100%; display: flex; justify-content: space-between">
     <div id="myPaletteDiv" style="width: 200px; height: 100px; z-index: 1000; position: absolute; margin-right: 2px; padding-top: 200px; background-color: whitesmoke; border: solid 1px black">
     </div>
-    <div id="paletteZone" style="width: 200px; height: 100px; margin-right: 2px; margin-top: 5px; z-index: 1200; position: absolute; background-color: lightblue; padding: 10px;">
+    <div id="paletteZone" style="width: 200px; height: 115px; margin-right: 2px; z-index: 1200; position: absolute; background-color: lightblue; padding: 10px;">
         <div style="display: grid;   grid-template-columns: 100px 50px 100px; ">
         <div class="draggable" draggable="true"><p>&#128512;</p></div>
         <div class="draggable" draggable="true"><p>&#128512;</p></div>
@@ -460,6 +481,7 @@
     <div>
       <button id="SaveButton" onclick="save()">Save</button>
       <button onclick="load()">Load</button>
+      <button id="blobButton">Make Blob and Download</button>
     </div>
     <textarea id="mySavedModel" style="width:100%;height:300px; display: none;">
         { "class": "go.GraphLinksModel",
