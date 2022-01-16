@@ -26,6 +26,157 @@
   <script src="extensions/Figures.js"></script>
     <script id="code">
     function init() {
+
+
+      // *********************************************************
+      // First, set up the infrastructure to do HTML drag-and-drop
+      // *********************************************************
+
+      var dragged = null; // A reference to the element currently being dragged
+
+      // highlight stationary nodes during an external drag-and-drop into a Diagram
+      function highlight(node) {  // may be null
+        var oldskips = myDiagram.skipsUndoManager;
+        myDiagram.skipsUndoManager = true;
+        myDiagram.startTransaction("highlight");
+        if (node !== null) {
+          myDiagram.highlight(node);
+        } else {
+          myDiagram.clearHighlighteds();
+        }
+        myDiagram.commitTransaction("highlight");
+        myDiagram.skipsUndoManager = oldskips;
+      }
+
+      // This event should only fire on the drag targets.
+      // Instead of finding every drag target,
+      // we can add the event to the document and disregard
+      // all elements that are not of class "draggable"
+      document.addEventListener("dragstart", function(event) {
+        if (event.target.className !== "draggable") return;
+        // Some data must be set to allow drag
+        event.dataTransfer.setData("text", event.target.textContent);
+
+        // store a reference to the dragged element and the offset of the mouse from the center of the element
+        dragged = event.target;
+        dragged.offsetX = event.offsetX - dragged.clientWidth / 2;
+        dragged.offsetY = event.offsetY - dragged.clientHeight / 2;
+        // Objects during drag will have a red border
+        event.target.style.border = "2px solid red";
+      }, false);
+
+      // This event resets styles after a drag has completed (successfully or not)
+      document.addEventListener("dragend", function(event) {
+        // reset the border of the dragged element
+        dragged.style.border = "";
+        highlight(null);
+      }, false);
+
+      // Next, events intended for the drop target - the Diagram div
+
+      var div = document.getElementById("myDiagramDiv");
+      div.addEventListener("dragenter", function(event) {
+        // Here you could also set effects on the Diagram,
+        // such as changing the background color to indicate an acceptable drop zone
+
+        // Requirement in some browsers, such as Internet Explorer
+        event.preventDefault();
+      }, false);
+
+      div.addEventListener("dragover", function(event) {
+        // We call preventDefault to allow a drop
+        // But on divs that already contain an element,
+        // we want to disallow dropping
+
+        if (this === myDiagram.div) {
+          var can = event.target;
+          var pixelratio = myDiagram.computePixelRatio();
+
+          // if the target is not the canvas, we may have trouble, so just quit:
+          if (!(can instanceof HTMLCanvasElement)) return;
+
+          var bbox = can.getBoundingClientRect();
+          var bbw = bbox.width;
+          if (bbw === 0) bbw = 0.001;
+          var bbh = bbox.height;
+          if (bbh === 0) bbh = 0.001;
+          var mx = event.clientX - bbox.left * ((can.width / pixelratio) / bbw);
+          var my = event.clientY - bbox.top * ((can.height / pixelratio) / bbh);
+          var point = myDiagram.transformViewToDoc(new go.Point(mx, my));
+          var curnode = myDiagram.findPartAt(point, true);
+          if (curnode instanceof go.Node) {
+            highlight(curnode);
+          } else {
+            highlight(null);
+          }
+        }
+
+        if (event.target.className === "dropzone") {
+          // Disallow a drop by returning before a call to preventDefault:
+          return;
+        }
+
+        // Allow a drop on everything else
+        event.preventDefault();
+      }, false);
+
+      div.addEventListener("dragleave", function(event) {
+        // reset background of potential drop target
+        if (event.target.className == "dropzone") {
+          event.target.style.background = "";
+        }
+        highlight(null);
+      }, false);
+
+      // handle the user option for removing dragged items from the Palette
+      var remove = document.getElementById('remove');
+
+      div.addEventListener("drop", function(event) {
+        // prevent default action
+        // (open as link for some elements in some browsers)
+        event.preventDefault();
+
+        // Dragging onto a Diagram
+        if (this === myDiagram.div) {
+          var can = event.target;
+          var pixelratio = window.PIXELRATIO;
+
+          // if the target is not the canvas, we may have trouble, so just quit:
+          if (!(can instanceof HTMLCanvasElement)) return;
+
+          var bbox = can.getBoundingClientRect();
+          var bbw = bbox.width;
+          if (bbw === 0) bbw = 0.001;
+          var bbh = bbox.height;
+          if (bbh === 0) bbh = 0.001;
+          var mx = event.clientX - bbox.left * ((can.width / pixelratio) / bbw) - dragged.offsetX;
+          var my = event.clientY - bbox.top * ((can.height / pixelratio) / bbh) - dragged.offsetY;
+          var point = myDiagram.transformViewToDoc(new go.Point(mx, my));
+          myDiagram.startTransaction('new node');
+          myDiagram.model.addNodeData({
+            location: point,
+            text: event.dataTransfer.getData('text'),
+            color: "lightyellow"
+          });
+          myDiagram.commitTransaction('new node');
+
+          // remove dragged element from its old location
+          if (remove.checked) dragged.parentNode.removeChild(dragged);
+        }
+
+        // If we were using drag data, we could get it here, ie:
+        // var data = event.dataTransfer.getData('text');
+      }, false);
+
+      // =====================================================================
+
+
+
+
+
+
+
+
       var $ = go.GraphObject.make;  // for conciseness in defining templates
 
       myDiagram =
@@ -43,12 +194,6 @@
             "linkingTool.portGravity": 20,
             "relinkingTool.isUnconnectedLinkValid": true,
             "relinkingTool.portGravity": 20,
-            "relinkingTool.fromHandleArchetype":
-              $(go.Shape, "Diamond", { segmentIndex: 0, cursor: "pointer", desiredSize: new go.Size(8, 8), fill: "tomato", stroke: "darkred" }),
-            "relinkingTool.toHandleArchetype":
-              $(go.Shape, "Diamond", { segmentIndex: -1, cursor: "pointer", desiredSize: new go.Size(8, 8), fill: "darkred", stroke: "tomato" }),
-            "linkReshapingTool.handleArchetype":
-              $(go.Shape, "Diamond", { desiredSize: new go.Size(7, 7), fill: "lightblue", stroke: "deepskyblue" }),
             "rotatingTool.handleAngle": 270,
             "rotatingTool.handleDistance": 30,
             "rotatingTool.snapAngleMultiple": 15,
@@ -90,7 +235,7 @@
 
       var nodeSelectionAdornmentTemplate =
         $(go.Adornment, "Auto",
-          $(go.Shape, { fill: null, stroke: "deepskyblue", strokeWidth: 1.5, strokeDashArray: [4, 2] }),
+          $(go.Shape, { fill: null, stroke: null, strokeWidth: 1.5, strokeDashArray: [4, 2] }),
           $(go.Placeholder)
         );
 
@@ -113,8 +258,8 @@
       var nodeRotateAdornmentTemplate =
         $(go.Adornment,
           { locationSpot: go.Spot.Center, locationObjectName: "ELLIPSE" },
-          $(go.Shape, "Ellipse", { name: "ELLIPSE", cursor: "pointer", desiredSize: new go.Size(7, 7), fill: "lightblue", stroke: "deepskyblue" }),
-          $(go.Shape, { geometryString: "M3.5 7 L3.5 30", isGeometryPositioned: true, stroke: "deepskyblue", strokeWidth: 1.5, strokeDashArray: [4, 2] })
+          $(go.Shape, "Ellipse", { name: "ELLIPSE", cursor: "pointer", desiredSize: new go.Size(7, 7), fill: "lightblue", stroke: null }),
+          $(go.Shape, { geometryString: "M3.5 7 L3.5 30", isGeometryPositioned: true, stroke: null, strokeWidth: 1.5, strokeDashArray: [4, 2] })
         );
 
       myDiagram.nodeTemplate =
@@ -261,13 +406,13 @@
             model: new go.GraphLinksModel([  // specify the contents of the Palette
             //   { text: "Start", figure: "Ellipse", "size":"75 75", fill: "#00AD5F" },
             //   { text: "Step" },
-            //   { text: "DB", figure: "Database", fill: "lightgray" },
-            //   { text: "???", figure: "Diamond", fill: "lightskyblue" },
-              { text: "Happy", figure: "Ellipse", "size":"20 20", fill: "white" },
+               { text: "", figure: "", fill: "lightgray" },
+               { text: "", figure: "", fill: "lightgray" },
+              { text: "", figure: "", "size":"20 20", fill: "" },
               { text: "Nieuwe stap toevoegen", figure: "RoundedRectangle", fill: "lightyellow" }
             ], [
                 // the Palette also has a disconnected Link, which the user can drag-and-drop
-                { points: new go.List(/*go.Point*/).addAll([new go.Point(0, 0)]) }
+            //    { points: new go.List(/*go.Point*/).addAll([new go.Point(0, 0)]) }
               ])
           });
     }
@@ -299,32 +444,18 @@
   <div style="width: 100%; display: flex; justify-content: space-between">
     <div id="myPaletteDiv" style="width: 200px; height: 100px; z-index: 1000; position: absolute; margin-right: 2px; padding-top: 200px; background-color: whitesmoke; border: solid 1px black">
     </div>
+    <div id="paletteZone" style="width: 200px; height: 100px; margin-right: 2px; margin-top: 5px; z-index: 1200; position: absolute; background-color: lightblue; padding: 10px;">
+        <div style="display: grid;   grid-template-columns: 100px 50px 100px; ">
+        <div class="draggable" draggable="true"><p>&#128512;</p></div>
+        <div class="draggable" draggable="true"><p>&#128512;</p></div>
+        <div class="draggable" draggable="true"><p>&#128512;</p></div>
+
+        <div class="draggable" draggable="true">Coffee</div>
+        <div class="draggable" draggable="true">Tea</div>
+        </div>
+    </div>
     <div id="myDiagramDiv" style="flex-grow: 1; height: 620px; border: solid 1px black"></div>
   </div>
-  <!-- <p>
-    This sample demonstrates the ability for the user to drag around a Link as if it were a Node.
-    When either end of the link passes over a valid port, the port is highlighted.
-  </p>
-  <p>
-    The link-dragging functionality is enabled by setting some or all of the following properties:
-    <a>DraggingTool.dragsLink</a>, <a>LinkingTool.isUnconnectedLinkValid</a>, and
-    <a>RelinkingTool.isUnconnectedLinkValid</a>.
-  </p>
-  <p>
-    Note that a Link is present in the <a>Palette</a> so that it too can be dragged out and onto
-    the main Diagram.  Because links are not automatically routed when either end is not connected
-    with a Node, the route is provided explicitly when that Palette item is defined.
-  </p>
-  <p>
-    This also demonstrates several custom Adornments:
-    <a>Part.selectionAdornmentTemplate</a>, <a>Part.resizeAdornmentTemplate</a>, and
-    <a>Part.rotateAdornmentTemplate</a>.
-  </p>
-  <p>
-    Finally this sample demonstrates saving and restoring the <a>Diagram.position</a> as a property
-    on the <a>Model.modelData</a> object that is automatically saved and restored when calling <a>Model.toJson</a>
-    and <a>Model,fromJson</a>.
-  </p> -->
   <div>
     <div>
       <button id="SaveButton" onclick="save()">Save</button>
