@@ -6,7 +6,7 @@
 <meta name="description" content="Drag a link to reconnect it. Nodes have custom Adornments for selection, resizing, and rotating.  The Palette includes links."/> 
 <link rel="stylesheet" href="assets/css/style.css"/> 
 <!-- Copyright 1998-2021 by Northwoods Software Corporation. -->
-<title>Draggable Link</title>
+<title>Journey Mapper</title>
 </head>
 
 <body>
@@ -399,9 +399,8 @@
             //   { text: "Step" },
               { text: "", figure: "", fill: "lightgray" },
               { text: "", figure: "", "size":"20 20", fill: "" },
-              { text: "", figure: "", "size":"20 20", fill: "" },
-              { text: "", figure: "", "size":"5 5", fill: "" },
-              { text: "Nieuwe stap toevoegen", figure: "RoundedRectangle", fill: "lightyellow", size: "160 70" }
+              { text: "", figure: "", "size":"40 40", fill: "" },
+              { text: "Nieuwe stap toevoegen", figure: "RoundedRectangle", fill: "lightyellow", size: "180 70" }
             ], [
                 // the Palette also has a disconnected Link, which the user can drag-and-drop
             //    { points: new go.List(/*go.Point*/).addAll([new go.Point(0, 0)]) }
@@ -462,28 +461,37 @@
   <section style="height: 10vh; padding-left: 4em; padding-right: 4em; margin-bottom: 3vh; ">  
 <div id="sample" style="width: 100%;">
   <div style="width: 100%; display: flex; justify-content: space-between">
-    <div id="myPaletteDiv" style="width: 200px; height: 219px; z-index: 1000; position: absolute; margin-right: 2px; margin-top: 400px; background-color: whitesmoke; border-left: solid 1px black">
+    <div id="myPaletteDiv" style="width: 300px; height: 219px; z-index: 1000; position: absolute; margin-right: 2px; margin-top: 480px; background-color: whitesmoke; border-left: solid 1px black">
     </div>
-    <div id="paletteZone" style="width: 200px; height: 520px; margin-right: 2px; z-index: 1200; position: absolute; background-color: whitesmoke; padding: 10px; border-left: solid 1px black; border-top: solid 1px black">
+    <div id="paletteZone" style="width: 300px; height: 600px; margin-right: 2px; z-index: 1200; position: absolute; background-color: whitesmoke; padding: 10px; border-left: solid 1px black; border-top: solid 1px black">
       <div class="draggable" draggable="false">
-        <p style="font-weight: bold;">Quick Guide:</p>
-        <p><span style="font-weight: bold;">New Step:</span> Drag the yellow box below into the canvas</p>
-        <p>This is a quick guide for your use. Drag the yellow rectangular to add</p>
+        <p style="font-weight: bold;">Snelgids</p>
+        <p><span style="font-weight: bold;">Nieuwe stap creëren:</span> Sleep de gele doos hieronder naar het canvas <span style="font-weight: bold;">OF</span> kopieer een bestaand vak en pas de inhoud aan</p>
+        <p><span style="font-weight: bold;">Kopieer stap box:</span> gebruik Ctrl+C en Ctrl+V om een bestaand vak te kopiëren en te plakken. Klik op het midden van het vak om het gekopieerde vak te verplaatsen.</p>
+        <p><span style="font-weight: bold;">Twee stappen verbinden:</span> Beweeg de muis over het eerste vakje totdat u het handicoontje ziet. klik en sleep naar de tweede stap. de rand van het vakje wordt roze wanneer het klaar is om aangesloten te worden.</p>
+        <p><span style="font-weight: bold;">Stap of verbinding verwijderen:</span>  selecteer en klik op delete of de backspace-toets op uw toetsenbord.</p>
+        <p style="font-weight: bold;">Your Resources:</p>
 
       </div>  
 
 
-      <div style="display: grid; padding-left: 10px; grid-template-columns: 40px 40px 40px 40px; ">
+      <div style="display: grid; padding-left: 10px; grid-template-columns: 40px 40px 40px 40px 40px 40px; ">
         <div class="draggable" draggable="true"><p style="font-size: 25px;">&#128512;</p></div>
         <div class="draggable" draggable="true"><p style="font-size: 25px;">&#x1F914;</p></div>
         <div class="draggable" draggable="true"><p style="font-size: 25px;">&#x1F60E;</p></div>
         <div class="draggable" draggable="true"><p style="font-size: 25px;">&#x1F644;</p></div>
         <div class="draggable" draggable="true"><p style="font-size: 25px;">&#x1F604;</p></div>
         <div class="draggable" draggable="true"><p style="font-size: 25px;">&#128512;</p></div>
+        <div class="draggable" draggable="true"><p style="font-size: 25px;">&#127881;</p></div>
+        <div class="draggable" draggable="true"><p style="font-size: 25px;">&#128545;</p></div>
+        <div class="draggable" draggable="true"><p style="font-size: 25px;">&#128551;</p></div>
+        <div class="draggable" draggable="true"><p style="font-size: 25px;">&#128555;</p></div>
+        <div class="draggable" draggable="true"><p style="font-size: 25px;">&#128564;</p></div>
+        <div class="draggable" draggable="true"><p style="font-size: 25px;">&#129488;</p></div>
 
       </div>
     </div>
-    <div id="myDiagramDiv" style="flex-grow: 1; height: 620px; border: solid 1px black"></div>
+    <div id="myDiagramDiv" style="flex-grow: 1; height: 700px; border: solid 1px black"></div>
   </div>
   <div>
     <div>
